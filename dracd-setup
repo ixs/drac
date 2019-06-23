@@ -1,0 +1,37 @@
+#!/bin/sh -
+#
+# dracd-setup
+
+PATH=/usr/local/bin:/priv/usr/sbin:/usr/local/sbin:/usr/bin:/usr/sbin
+export PATH
+DAEMON=rpc.dracd
+#DRACD_PID=`ps -axc | grep 'rpc.dracd$' | sed -e 's/^  *//' -e 's/ .*//'`
+DRACD_PID=`ps -e | grep 'rpc.drac$' | sed -e 's/^  *//' -e 's/ .*//'`
+
+dracd_running() {
+	ps -p $DRACD_PID >/dev/null 2>&1
+}
+
+case "$1" in
+start)
+	if dracd_running; then
+		echo "$DAEMON is already running" >&2
+	else
+		echo "starting $DAEMON" >&2
+		$DAEMON
+	fi
+;;
+stop)
+	if dracd_running; then
+		echo "stopping $DAEMON" >&2
+		kill $DRACD_PID
+	else
+		echo "$DAEMON is not running" >&2
+	fi
+;;
+*)
+	echo "Usage: /etc/init.d/dracd-setup {start|stop}" >&2
+;;
+esac
+
+#!/end

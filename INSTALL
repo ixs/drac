@@ -1,0 +1,269 @@
+These installation instructions are for specific operating systems
+and software levels, but should at least serve as examples.
+See the DRAC web page http://mail.cc.umanitoba.ca/drac/index.html
+for the most current instructions.
+
+DRAC is now incorporated into Debian Linux.  You don't need to
+compile DRAC for this Linux version.  For more information, see:
+
+	http://packages.debian.org/drac
+	http://ftp.debian.org/debian/pool/main/d/drac/
+	http://buildd.debian.org/build.php?arch=&pkg=drac
+	http://bugs.debian.org/drac
+
+You _must_ compile DRAC with the same version of the Berkeley db
+package that was used to compile your copy of sendmail.  This may not
+be the default version that is currently installed on your system.
+One way to determine this is `strings /usr/lib/sendmail | grep -i
+sleepy'.  Versions 2.x, 3.x, or 4.x of the Berkeley db package
+(http://www.sleepycat.com/) is recommended, but version 1.85 will also
+work.  The critical thing is to use the same version that was used to
+compile sendmail.
+
+1) Edit Makefile to suit your system.
+
+   For Solaris:
+	INSTALL = /usr/ucb/install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DTI_RPC -DFCNTL_LOCK -DSYSINFO
+	CC = <your compiler>
+	RANLIB = :
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = -L/path/to/db/library -lnsl -ldb
+	TSTLIBS = -L. -ldrac -lnsl
+	MANLIB = 3
+	MANADM = 1m
+
+   For SunOS 4.x:
+	INSTALL = install
+	EBIN = /usr/local/etc
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFLOCK_LOCK -DGETHOST
+	CC = <your compiler>
+	RANLIB = ranlib
+	CFLAGS = -Dstrtoul=strtol $(DEFS) -g -I/path/to/db/include
+	LDLIBS = -L/path/to/db/library -ldb
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = -I
+	MANLIB = 3
+	MANADM = 8
+
+   For BSDI:
+	INSTALL = install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFCNTL_LOCK -DGETHOST
+	CC = <your compiler>
+	RANLIB = ranlib
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = -L/path/to/db/library -ldb
+	TSTLIBS = -L. -ldrac
+	MANLIB = 3
+	MANADM = 8
+
+   For IRIX 6.2:
+	INSTALL = /usr/bin/X11/bsdinst
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DTI_RPC -DFCNTL_LOCK -DSYSINFO -D_SVR4_TIRPC
+	CC = <your compiler>
+	RANLIB = :
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = -L/path/to/db/library -lnsl -ldb
+	TSTLIBS = -L. -ldrac -lnsl
+	MANLIB = 3
+	MANADM = 1m
+
+   For NetBSD:
+	INSTALL = install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFCNTL_LOCK -DGETHOST -DDASH_C
+	CC = <your compiler>
+	RANLIB = ranlib
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = 
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = -C
+	MANLIB = 3
+	MANADM = 8
+
+   For FreeBSD 2.2.x:
+	INSTALL = install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFLOCK_LOCK -DGETHOST -DDASH_C
+	CC = <your compiler>
+	RANLIB = ranlib
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = 
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = -I -C
+	MANLIB = 3
+	MANADM = 8
+
+   For FreeBSD-4.1 with gdbm-1.8
+	INSTALL = install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFLOCK_LOCK -DGETHOST -DDASH_C
+	CC = cc
+	RANLIB = :
+	CFLAGS = $(DEFS) -g -I/usr/local/include
+	LDLIBS = 
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = -C
+	MANLIB = 3
+	MANADM = 1m
+
+   For Linux:
+	INSTALL = install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DSOCK_RPC -DFCNTL_LOCK -DGETHOST -DDASH_C
+	CC = <your compiler>
+	RANLIB = :
+	CFLAGS = $(DEFS) -g
+	LDLIBS = -ldb
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = -C -I
+	MANLIB = 3
+	MANADM = 8
+
+   For AIX:
+	INSTALL = /usr/ucb/install
+	EBIN = /usr/local/sbin
+	MAN = /usr/local/man/man
+	DEFS = -DD_BSD -DBSD_INCLUDES -DSOCK_RPC -DFCNTL_LOCK -DGETHOST -DDEBUG
+	CC = <your compiler>
+	RANLIB = :
+	CFLAGS = $(DEFS) -g -I/path/to/db/include
+	LDLIBS = -L/path/to/db/library -ldb
+	TSTLIBS = -L. -ldrac
+	RPCGENFLAGS = 
+	MANLIB = 3
+	MANADM = 1m
+
+2) Compile the package:
+
+	$ make
+
+3) Install the server:
+
+	# make install
+
+4) Install the man pages:
+
+	# make install-man
+
+5) Install the startup script: For Solaris, customize dracd-setup and
+   install it in /etc/init.d , with a link S78dracd in /etc/rc2.d .
+
+6) Start the daemon:  For Solaris...
+
+	# sh /etc/init.d/dracd-setup start
+
+7) Modify POP/IMAP servers:  The dracauth() client function is suitable
+   for mail servers that run a separate instance for each mail user.
+   It should be called just after the user has been authenticated
+   successfully.  Other mail servers will require a more complex
+   interface.  See testing.c and dracauth.c for details.  The server
+   hostname can be specified as "localhost" if it's running on the
+   same machine, but it would be better as a run-time configuration
+   parameter.  Here's a sample patch that works for qpopper:
+
+--------8<--------
+*** pop_pass.c-nodrac	Sat Jun 27 10:56:00 1998
+--- pop_pass.c	Wed Jul 22 22:54:04 1998
+***************
+*** 19,24 ****
+--- 19,28 ----
+  
+  #include <pwd.h>
+  #include "popper.h"
++ #ifdef DRAC_AUTH
++ #include <netinet/in.h>
++ #include <arpa/inet.h>
++ #endif /* DRAC_AUTH */
+  
+  
+  /* This error message is vague on purpose to help reduce help improve
+***************
+*** 502,507 ****
+--- 506,519 ----
+  
+      /*  Initialize the last-message-accessed number */
+      p->last_msg = 0;
++ 
++ #ifdef DRAC_AUTH
++     {
++ 	char *err;
++ 	if (dracauth("localhost", inet_addr(p->ipaddr), &err) != 0)
++ 	  pop_log(p,POP_PRIORITY,err);
++     }
++ #endif /* DRAC_AUTH */
+  
+      /*  Authorization completed successfully */
+      return (pop_msg (p,POP_SUCCESS,
+*** make.solaris2-nodrac	Sat Feb 17 14:25:15 1996
+--- make.solaris2	Wed Jul 22 23:06:47 1998
+***************
+*** 39,45 ****
+  			-DAUTH -DMAILOCK -DDEBUG -DBINMAIL_IS_SETGID \
+  			-DNO_AT_HOST -DNFS_SPOOL -DPOP_ACCT -DPOP_LLOG \
+  			-DNONAUTHFILE=\"/etc/popper.deny\" \
+! 			-DBULLDIR=\"/var/spool/bulls\"
+  
+  TARGET		=	popper.solaris2
+  
+--- 39,45 ----
+  			-DAUTH -DMAILOCK -DDEBUG -DBINMAIL_IS_SETGID \
+  			-DNO_AT_HOST -DNFS_SPOOL -DPOP_ACCT -DPOP_LLOG \
+  			-DNONAUTHFILE=\"/etc/popper.deny\" \
+! 			-DBULLDIR=\"/var/spool/bulls\" -DDRAC_AUTH
+  
+  TARGET		=	popper.solaris2
+  
+***************
+*** 56,62 ****
+  
+  
+  ${TARGET}: ${OBJS}
+! 	${CC}  ${OBJS} -o ${TARGET} -lsocket -lnsl -lresolv -lkrb -lmail
+  
+  tar: ${SRCS} ${DOCS} ${MAKEFILE}
+  	rm -f ${TAR} *.Z*
+--- 56,62 ----
+  
+  
+  ${TARGET}: ${OBJS}
+! 	${CC}  ${OBJS} -o ${TARGET} -L/usr/local/src/drac -ldrac -lsocket -lnsl -lresolv -lkrb -lmail
+  
+  tar: ${SRCS} ${DOCS} ${MAKEFILE}
+  	rm -f ${TAR} *.Z*
+--------8<--------
+
+8) Install the modified mail server:  For qpopper, it's `make' and
+   `make install'.
+
+9) Modify sendmail.cf:  For sendmail 8.9.0, add the following to
+   your .mc file under LOCAL_CONFIG...
+
+# dynamic relay authorization control map
+Kdrac btree /etc/mail/dracd
+
+   and the following under LOCAL_RULESETS...
+
+SLocal_check_rcpt
+# allow recent POP/IMAP mail clients to relay
+R$*				$: $&{client_addr}
+R$+				$: $(drac $1 $: ? $)
+R?				$@ ?
+R$+				$@ $#OK
+
+  and then re-make the .cf file
+
+10) Restart sendmail:  The SMTP and queue daemons will need to be
+    restarted.
+

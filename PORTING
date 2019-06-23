@@ -1,0 +1,31 @@
+This package has only been compiled and tested under a small number
+of Unix operating systems.  See the INSTALL file for details.
+Other operating systems will require at least a review of the
+Makefile settings.
+
+rpc.dracd handles IP addresses internally as unsigned longs in network
+byte order.  struct in_addr and the conversion functions inet_addr()
+and inet_ntoa() are compatible with this format.  The IP address sent
+over the RPC connection must be converted to host byte order before
+being sent, and converted to network byte order after being received,
+so as to work correctly on both big-endian and little-endian machines.
+
+The following unportable code sections in rpc.dracd.c may need to be
+conditionally-compiled for other systems.  Most of this is now
+handled in the Makefile...
+
+o Include files
+
+o RPC server interface: svc_getreqset(), svc_fdset
+
+o Obtaining the client IP address: svc_getrpccaller(), taddr2uaddr(),
+	getnetconfigent(), freenetconfigent()
+
+o Memory clearing and copying: memset(), memcpy()
+
+o Convert string to unsigned long: strtoul()
+
+o File locking: fcntl()
+
+o Obtaining the local host name: sysinfo()
+

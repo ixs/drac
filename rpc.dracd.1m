@@ -1,0 +1,76 @@
+.\" rpc.dracd [-i] [-e expire] [dbfile]
+'\"macro stdmacro
+.\" Copyright University of Manitoba 1998.
+.nr X
+.TH rpc.dracd 1M "22 Jul 1998"
+.SH NAME
+rpc.dracd \- Dynamic Relay Authorization Control server
+.SH SYNOPSIS
+\f3rpc.dracd\f1 [\|\f3\-i\f1\| ] [ \f3\-e \f2expire\f1 ] [ \f2dbfile\f1 ] 
+.SH AVAILABILITY
+.LP
+ftp.cc.umanitoba.ca:/src
+.SH DESCRIPTION
+.IX  "rpc.dracd command"  ""  "\fLrpc.dracd\fP \(em Dynamic Relay Authorization Control server"
+.IX  "servers"  "Dynamic Relay Authorization Control server" "" "Dynamic Relay Authorization Control server \(em \fLrpc.dracd\fP"
+\f4rpc.dracd\f1
+is the Dynamic Relay Authorization Control server.
+It uses the Berkeley db package to maintain a relay authorization
+map for sendmail, by default \f4/etc/mail/dracd.db\f1.
+POP and IMAP mail servers make an RPC call to add an entry to the
+authorization cache after they have authenticated each user.
+The daemon, rpc.dracd, adds or updates entries in the cache, and
+periodically expires old entries.
+Only trusted mail servers are permitted to communicate with rpc.dracd,
+as controlled by \f4/etc/mail/dracd.allow\f1.
+If this file does not exist, all local IP addresses are permitted.
+.SS Allow File Format
+The Allow File file consists of entries of the form:
+.LP
+.RS
+\f4netmask \f2netaddr\fP\f1
+.br
+.RE
+.LP
+where both
+.I netmask
+and
+.I netaddr
+must be dotted quads.
+.PD
+.RE
+.SH OPTIONS
+.TP 15
+.BI \-i
+Initialize the database on startup.
+.TP
+.BI \-e \0expire
+Set the expire time limit.
+.I expire
+is the number of minutes the entries will remain in the database.
+It defaults to 30 minutes.
+.TP
+.BI dbfile
+Use a different database file name.
+.br
+.ne 4
+.LP
+.SH FILES
+.PD 0
+.TP 30
+.B /etc/mail/dracd.db
+default database file
+.TP
+.B /etc/mail/dracd.allow
+default allow file.
+.PD
+.SH SEE ALSO
+.BR dracauth (3)
+.SH NOTES
+The following signals have the specified effect when sent to the
+server process using the
+.BR kill (1)
+command.
+.TP 20
+.SM SIGTERM
+closes the database and terminates the server.

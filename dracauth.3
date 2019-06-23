@@ -1,0 +1,91 @@
+.\" dracauth(server, userip, errmsg)
+.\" Copyright University of Manitoba 1998.
+.TH dracauth 3 "22 Jul 1998"
+.SH NAME
+dracauth \- Dynamic Relay Authorization Control client interface
+.SH SYNOPSIS
+.LP
+.B cc
+.RI "[ " "flag" " \|.\|.\|. ] " "file" " \|.\|.\|."
+.B \-ldrac
+.RI "[ " "library" " \|.\|.\|. ]"
+.SH MT-LEVEL
+.LP
+Unsafe
+.SH DESCRIPTION
+.IX "Dynamic Relay Authorization Control client interface" "dracauth" "" "\(em \fLdracauth\fP"
+.PP
+Dynamic Relay Authorization Control
+uses Berkeley db package to maintain a relay authorization
+map for sendmail.
+POP and IMAP mail servers make an RPC call to add an entry to the
+authorization cache after they have authenticated each user.
+.SS Routines
+.PP
+.BI "dracauth(char *" "server" ,
+.BI "unsigned long " "userip" ,
+.BI "char **" "errmsg" );
+.PP
+.BI "dracconn(char *" "server" ,
+.BI "char **" "errmsg" );
+.PP
+.BI "dracsend(unsigned long " "userip" ,
+.BI "char **" "errmsg" );
+.PP
+.BI "dracdisc(char **" "errmsg" );
+.IP
+.B dracauth(\|)
+sends a request to the server running on host
+\f2server\f1
+to authorize SMTP relaying from IP address
+\f2userip\f1.
+It does the connect, send, and disconnect in one operation.
+\f2errmsg\f1
+is the address of an uninitialized character pointer.
+If this parameter is non-NULL,
+.B dracauth(\|)
+will store a pointer to an error message at this location.
+.IP
+.B dracconn(\|)
+initiates an RPC connection to the server running on host
+\f2server\f1.
+\f2errmsg\f1
+is the address of an uninitialized character pointer.
+If this parameter is non-NULL,
+.B dracconn(\|)
+will store a pointer to an error message at this location.
+.IP
+.B dracsend(\|)
+sends a request over the RPC connection
+to authorize SMTP relaying from IP address
+\f2userip\f1.
+\f2errmsg\f1
+is the address of an uninitialized character pointer.
+If this parameter is non-NULL,
+.B dracsend(\|)
+will store a pointer to an error message at this location.
+.IP
+.B dracdisc(\|)
+terminates the RPC connection.
+\f2errmsg\f1
+is the address of an uninitialized character pointer.
+If this parameter is non-NULL,
+.B dracdisc(\|)
+will store a pointer to an error message at this location.
+.SH RETURN VALUES
+.PP
+All integer functions return
+.B 0
+if the
+requested operation is successful,
+or non-zero and an error message pointer if the operation failed.
+.SH FILES
+.PD 0
+.TP 20
+.B libdrac.a
+.PD
+.SH "SEE ALSO"
+.BR rpc.dracd (1m)
+.SH NOTES
+This interface is unsafe in multithreaded applications.  Unsafe
+interfaces should be called only from the main thread.

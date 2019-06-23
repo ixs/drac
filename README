@@ -1,0 +1,64 @@
+
+		Dynamic Relay Authorization Control
+
+
+Please see the web page http://mail.cc.umanitoba.ca/drac/index.html
+for up to date information on DRAC.
+
+
+Description:
+
+o Uses Berkeley db package to maintain a relay authorization
+  map for sendmail, /etc/mail/dracd.db .
+
+o POP and IMAP mail servers make an RPC call to add an entry to the
+  authorization cache after they have authenticated each user.
+
+o The daemon, rpc.dracd, adds or updates entries in the cache, and
+  periodically expires old entries.
+
+o Only trusted mail servers are permitted to communicate with rpc.dracd,
+  as controlled by /etc/mail/dracd.allow .
+
+o The daemon can optionally re-create the database on startup.
+
+o Expiry time and cache file name can be set by command-line
+  options.
+
+
+Issues:
+
+o Default trusted mail hosts: all local IP addresses.
+
+o Locking: must be compatible with sendmail.  Lock around put()
+  and sync() calls.  Need locking for expiry as well.
+
+o Need periodic timing for expiry, not an idle timeout.
+
+o RPC contents: client IP address.
+
+o Database key: dotted decimal IP address.
+
+o Database value: ASCII expiry time.
+
+o Keys and values should not be nul-terminated.
+
+o Daemon should catch SIGTERM and close database.
+
+o Client library needs a timeout in case server is down.
+
+
+Enhancements:
+
+o Use ioctl() to obtain IP addresses of all interfaces.
+
+o Drop procedure in client library.
+
+o Time-to-live sent along with IP address.
+
+o Stronger client-server security.
+
+o Lazy syncing of database.
+
+o Database in shared memory (shared with sendmail).
+

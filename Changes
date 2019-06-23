@@ -1,0 +1,42 @@
+
+1.12:
+	o Added support for DB 4.1.x
+
+	o Included Makefile settings for AIX (David Barroso Berrueta)
+
+1.11:
+	o Added support for DB version 3.1.x.
+
+1.10:
+	o Added support for postfix (Jeff Johnson) and
+	  exim (Mark Clements) MTAs.
+
+	o Included Makefile settings for FreeBSD 2.2.x (Forrest Aldrich).
+
+1.9:
+	o Fixed IP address byte order bug when RPC client and server
+	  ran on hosts with different byte orders (Konstantin Martynenko).
+
+1.8:
+	o Included Makefile settings for RedHat Linux (Andreas Fink).
+
+	o Added a dracd-setup script for RedHat Linux (Andreas Fink).
+
+1.7:
+	o Added support for `rpcgen -C'.
+
+	o Included Makefile settings for IRIX-6.2 (Ayamura Kikuchi).
+
+1.6:
+	o Added support for DB version 2.6.
+
+1.5:
+	o Source changes now recorded in a Changes file.
+
+	o ps command fixed in dracd-setup (Brian J. Coan).
+
+	o Reviewed IP address byte order issues (Brian J. Coan and
+	  Michael Tratz).
+
+	o Added support for DB version 1.85 (Brian J. Coan).
+

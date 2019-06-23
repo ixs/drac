@@ -1,0 +1,30 @@
+#!/bin/sh -
+# Put this file into /etc/rc.d/init.d/dracd
+# and link it intot he run levels you want to use it
+# by doing "ln -s  /etc/rc.d/init.d/dracd /etc/rc.d/rc.<runlevel>/S99dracd"
+#
+# dracd-setup
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# See how we were called.
+case "$1" in
+  start)
+        echo -n "Starting rpc.dracd daemon: "
+        daemon rpc.dracd&
+        echo
+        touch /var/lock/subsys/rpc.dracd
+        ;;
+  stop)
+        echo -n "Stopping rpc.dracd daemon: "
+        killproc rpc.dracd
+        echo
+        rm -f /var/lock/subsys/rpc.dracd
+        ;;
+  *)
+        echo "Usage: dracd {start|stop}"
+        exit 1
+esac
+
+exit 0
