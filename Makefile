@@ -65,11 +65,13 @@ RPC_SRC = drac.x
 LIB_SRC = dracauth.c
 SVC_SRC = rpc.dracd.c
 TST_SRC = testing.c
-PACKAGE = $(DOCFILES) $(MAKEFILE) $(RPC_SRC) $(LIB_SRC) $(SVC_SRC) $(TST_SRC)
+TST6_SRC = testing6.c
+PACKAGE = $(DOCFILES) $(MAKEFILE) $(RPC_SRC) $(LIB_SRC) $(SVC_SRC) $(TST_SRC) $(TST6_SRC)
 
 # Final targets
 
 CLIENT = testing
+CLIENT6 = testing6
 SERVER = rpc.dracd
 LIBRAR = libdrac.a
 
@@ -86,13 +88,14 @@ RPC_ALL = $(RPC_H) $(RPC_XDR) $(RPC_SVC) $(RPC_CLNT)
 LIB_OBJ = dracauth.o
 SVC_OBJ = rpc.dracd.o
 TST_OBJ = testing.o
+TST_OBJ6 = testing6.o
 H_OBJS = drac_xdr.o drac_svc.o drac_clnt.o $(SVC_OBJ) $(LIB_OBJ)
 L_OBJS = $(LIB_OBJ) drac_xdr.o drac_clnt.o
 S_OBJS = $(SVC_OBJ) drac_xdr.o drac_svc.o
 
 # Rules
 
-all: $(CLIENT) $(SERVER)
+all: $(CLIENT) $(CLIENT6) $(SERVER)
 
 $(RPC_ALL): $(RPC_SRC) 
 	rpcgen $(RPCGENFLAGS) $(RPC_SRC)
@@ -109,11 +112,14 @@ $(LIBRAR): $(L_OBJS)
 $(CLIENT): $(TST_OBJ) $(LIBRAR)
 	$(CC) -o $(CLIENT) $(TST_OBJ) $(TSTLIBS)
 
+$(CLIENT6): $(TST6_OBJ) $(LIBRAR)
+	$(CC) -o $(CLIENT6) $(TST6_OBJ) $(TSTLIBS)
+
 $(SERVER): $(S_OBJS) 
 	$(CC) -o $(SERVER) $(S_OBJS) $(LDLIBS)
 
 clean:
-	rm -f core $(RPC_ALL) $(H_OBJS) $(TST_OBJ) $(CLIENT) \
+	rm -f core $(RPC_ALL) $(H_OBJS) $(TST_OBJ) $(TST6_OBJ) $(CLIENT) $(CLIENT6) \
 		$(SERVER) $(LIBRAR)
 
 tar: $(PACKAGE)

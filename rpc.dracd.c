@@ -356,6 +356,128 @@ dracproc_add_1(argp, rqstp)
 	return (&result);
 }
 
+/* Add an entry to the database */
+addstat *
+#ifdef DASH_C
+dracproc_add_2_svc(argp, rqstp)
+#else
+dracproc_add_2(argp, rqstp)
+#endif
+	drac_add_parm6 *argp;
+	struct svc_req *rqstp; {
+
+	static addstat  result;
+	char buf[INET6_ADDRSTRLEN];
+#ifdef TI_RPC
+	struct netbuf *nb;
+	struct netconfig *nc;
+	char *cad, *pt;
+#endif
+#ifdef SOCK_RPC
+	struct sockaddr_in *si;
+#endif
+	struct in_addr client_ip;
+	struct in6_addr requ_ip;
+	DBT key, data;
+	char akey[INET6_ADDRSTRLEN+4], alimit[32];
+	struct net_def *nd;
+
+	result = ADD_SUCCESS;
+
+	/* Get the IP address of the client */
+#ifdef TI_RPC
+	if ( (nc = getnetconfigent(rqstp->rq_xprt->xp_netid)) == NULL
+		|| (nb = svc_getrpccaller(rqstp->rq_xprt)) == NULL
+		|| (cad = taddr2uaddr(nc, nb)) == NULL ) {
+		if (nc) freenetconfigent(nc);
+			result = ADD_SYSERR;
+			return (&result);
+	}
+	if ( (pt = strrchr(cad, '.')) != NULL ) *pt = '\0';
+	if ( (pt = strrchr(cad, '.')) != NULL ) *pt = '\0';
+	client_ip.s_addr = inet_addr(cad);
+	freenetconfigent(nc);
+	free(cad);
+#endif
+#ifdef SOCK_RPC
+	if ( (si = svc_getcaller(rqstp->rq_xprt)) == NULL ) {
+		result = ADD_SYSERR;
+		return (&result);
+	}
+	client_ip.s_addr = si->sin_addr.s_addr;
+#endif
+#ifdef DEBUG
+	fprintf(debugf, "Client Address: %s\n", inet_ntoa(client_ip));
+	fflush(debugf);
+#endif
+	/* Check agains the table of trusted clients */
+	for ( nd = net_tbl; nd != NULL; nd = nd->nd_next ) {
+		if ( (client_ip.s_addr & nd->nd_mask.s_addr)
+			== nd->nd_addr.s_addr ) break;
+		}
+		if ( nd == NULL ) {
+			result = ADD_PERM;
+			return (&result);
+		}
+		
+		/* Set up for the add */
+		memcpy(requ_ip.s6_addr, argp->ip_addr6,
+			sizeof(requ_ip.s6_addr));
+#ifdef DEBUG
+	fprintf(debugf, "Requested IP Address: %s\n",
+			inet_ntop(AF_INET6, requ_ip.s6_addr, buf, sizeof(buf)));
+	fflush(debugf);
+#endif
+	memset(&key, 0, sizeof(DBT));
+	memset(&data, 0, sizeof(DBT));
+	inet_ntop(AF_INET6, requ_ip.s6_addr, akey, sizeof(akey)-4);
+#ifdef CIDR_KEY
+	strcat(akey, "/128");
+#endif
+	key.data = akey;
+#ifdef TERM_KD
+	key.size = strlen(akey) + 1;
+#else
+	key.size = strlen(akey);
+#endif
+	sprintf(alimit, "%lu", time((time_t *)NULL) + explimit);
+	data.data = alimit;
+#ifdef TERM_KD
+	data.size = strlen(alimit) + 1;
+#else
+	data.size = strlen(alimit);
+#endif
+
+	/* Do the add and sync, with locking */
+	if ( lockdb() == (-1) ) {
+		syslog(LOG_ERR, "dracproc_add_1 lockdb failed: %m");
+	}
+#if DB_VERSION_MAJOR < 2
+	errno = 0;
+	dbp->put(dbp, &key, &data, 0);
+#else
+	errno = dbp->put(dbp, NULL, &key, &data, 0);
+#endif
+	if ( errno != 0 ) {
+		syslog(LOG_ERR, "dracproc_add_1 put failed: %m");
+		result = ADD_SYSERR;
+	}
+#if DB_VERSION_MAJOR < 2
+	errno = 0;
+	dbp->sync(dbp, 0);
+#else
+	errno = dbp->sync(dbp, 0);
+#endif
+	if ( errno != 0 ) {
+		syslog(LOG_ERR, "dracproc_add_1 sync failed: %m");
+	}
+	(void)unlockdb();
+
+	/* Send result code back to client */
+	return (&result);
+}
+
+
 /* Expire old entries from the database */
 expire() {
 #if DB_VERSION_MAJOR < 2

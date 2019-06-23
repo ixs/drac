@@ -17,6 +17,10 @@ struct drac_add_parm {
 	unsigned long ip_addr;	/* In network order */
 };
 
+struct drac_add_parm6 {
+	char ip_addr6[16];		/* In network order */
+};
+
 enum addstat {
 	ADD_SUCCESS,	/* Succeeded */
 	ADD_PERM,	/* Permission denied */
@@ -32,4 +36,11 @@ program DRACPROG {
 		addstat
 		DRACPROC_ADD(drac_add_parm) = 1;
 	} = 1;
+	version DRACVERS6 {
+		/*
+		 * Update my passwd entry
+		 */
+		addstat
+		DRACPROC_ADD(drac_add_parm6) = 1;
+	} = 2;
 } = 900101;
