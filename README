@@ -9,7 +9,7 @@ for up to date information on DRAC.
 Description:
 
 o Uses Berkeley db package to maintain a relay authorization
-  map for sendmail, /etc/mail/dracd.db .
+  map for sendmail, /etc/drac/dracd.db .
 
 o POP and IMAP mail servers make an RPC call to add an entry to the
   authorization cache after they have authenticated each user.
@@ -18,7 +18,7 @@ o The daemon, rpc.dracd, adds or updates entries in the cache, and
   periodically expires old entries.
 
 o Only trusted mail servers are permitted to communicate with rpc.dracd,
-  as controlled by /etc/mail/dracd.allow .
+  as controlled by /etc/drac/dracd.allow .
 
 o The daemon can optionally re-create the database on startup.
 

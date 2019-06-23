@@ -36,8 +36,8 @@
 #endif
 #include "drac.h"
 
-#define DBFILE "/etc/mail/dracd.db"
-#define ALFILE "/etc/mail/dracd.allow"
+#define DBFILE "/etc/drac/dracd.db"
+#define ALFILE "/etc/drac/dracd.allow"
 
 struct net_def {
     struct net_def *nd_next;
