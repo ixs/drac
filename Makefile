@@ -5,9 +5,10 @@
 
 # Paths
 
-INSTALL = /usr/ucb/install
-EBIN = /usr/local/sbin
-MAN = /usr/local/man/man
+DESTDIR =
+INSTALL = install
+EBIN = /usr/sbin
+MAN = /usr/share/man/man8
 
 # OS-Dependant settings
 
@@ -33,26 +34,19 @@ MAN = /usr/local/man/man
 # -DCIDR_KEY	# keys in CIDR format
 # -DTERM_KD	# keys and data nul-terminated
 
-DEFS = -DTI_RPC -DFCNTL_LOCK -DSYSINFO
+DEFS = -DSOCK_RPC -DFCNTL_LOCK -DGETHOST -DDASH_C
 
 # Compiler flags 
-CC = cc
+CC = gcc
 RANLIB = :
-CFLAGS = $(DEFS) -g -I/usr/local/src/db/db-4.1.25/build_unix
-#CFLAGS = $(DEFS) -g -I/usr/local/src/db/db-3.1.17/build_unix
-#CFLAGS = $(DEFS) -g -I/usr/local/src/db/db-2.4.14/Unix
-#CFLAGS = $(DEFS) -g -I/usr/local/src/db/db.1.85/PORT/sunos.5.2/include
-LDLIBS = -L/usr/local/src/db/db-4.1.25/build_unix -lnsl -ldb-4.1
-#LDLIBS = -L/usr/local/src/db/db-3.1.17/build_unix -lnsl -ldb
-#LDLIBS = -L/usr/local/src/db/db-2.4.14/Unix -lnsl -ldb
-#LDLIBS = -L/usr/local/src/db/db.1.85/PORT/sunos.5.2 -lnsl -ldb
-TSTLIBS = -L. -ldrac -lnsl
-RPCGENFLAGS = 
-#RPCGENFLAGS = -C
+CFLAGS = $(DEFS) -g -O2 -I/usr/include/libdb4/ -fPIC --shared
+LDLIBS = -L/usr/lib64/libdb4/ -ldb
+TSTLIBS = -L. -ldrac
+RPCGENFLAGS = -C -I
 
 # Man sections
 MANLIB = 3
-MANADM = 1m
+MANADM = 8
 
 ## Nothing to change after this point
 
@@ -66,7 +60,7 @@ LIB_SRC = dracauth.c
 SVC_SRC = rpc.dracd.c
 TST_SRC = testing.c
 TST6_SRC = testing6.c
-PACKAGE = $(DOCFILES) $(MAKEFILE) $(RPC_SRC) $(LIB_SRC) $(SVC_SRC) $(TST_SRC) $(TST6_SRC)
+PACKAGE = $(DOCFILES) $(MAKEFILE) $(RPC_SRC) $(LIB_SRC) $(SVC_SRC) $(TST_SRC) $(TST6_SRC) $(LIBSO) $(LIBSO_LNK)
 
 # Final targets
 
@@ -74,6 +68,8 @@ CLIENT = testing
 CLIENT6 = testing6
 SERVER = rpc.dracd
 LIBRAR = libdrac.a
+LIBSO = libdrac.so.1.12
+LIBSO_LNK = libdrac.so.1 libdrac.so
 
 # rpcgen output
 
@@ -88,7 +84,7 @@ RPC_ALL = $(RPC_H) $(RPC_XDR) $(RPC_SVC) $(RPC_CLNT)
 LIB_OBJ = dracauth.o
 SVC_OBJ = rpc.dracd.o
 TST_OBJ = testing.o
-TST_OBJ6 = testing6.o
+TST6_OBJ = testing6.o
 H_OBJS = drac_xdr.o drac_svc.o drac_clnt.o $(SVC_OBJ) $(LIB_OBJ)
 L_OBJS = $(LIB_OBJ) drac_xdr.o drac_clnt.o
 S_OBJS = $(SVC_OBJ) drac_xdr.o drac_svc.o
@@ -104,31 +100,40 @@ $(H_OBJS): $(RPC_H)
 
 $(LIB_OBJ) $(SVC_OBJ): $(MAKEFILE)
 
+$(LIBSO): $(L_OBJS)
+	rm -f $@ $(LIBSO_LNK)
+	$(CC) -shared -Wl,-soname,libdrac.so.1 \
+		-o libdrac.so.1.12 $(L_OBJS) -lc
+	ln -s libdrac.so.1.12 libdrac.so.1
+	ln -s libdrac.so.1.12 libdrac.so
+
 $(LIBRAR): $(L_OBJS)
 	rm -f $@
 	ar cq $@ $(L_OBJS)
 	$(RANLIB) $@
 
-$(CLIENT): $(TST_OBJ) $(LIBRAR)
+$(CLIENT): $(TST_OBJ) $(LIBSO) $(LIBRAR)
 	$(CC) -o $(CLIENT) $(TST_OBJ) $(TSTLIBS)
 
-$(CLIENT6): $(TST6_OBJ) $(LIBRAR)
+$(CLIENT6): $(TST6_OBJ) $(LIBSO) $(LIBRAR)
 	$(CC) -o $(CLIENT6) $(TST6_OBJ) $(TSTLIBS)
 
 $(SERVER): $(S_OBJS) 
 	$(CC) -o $(SERVER) $(S_OBJS) $(LDLIBS)
 
 clean:
-	rm -f core $(RPC_ALL) $(H_OBJS) $(TST_OBJ) $(TST6_OBJ) $(CLIENT) $(CLIENT6) \
-		$(SERVER) $(LIBRAR)
+	rm -f core $(RPC_ALL) $(H_OBJS) $(TST_OBJ) $(CLIENT) \
+		$(SERVER) $(LIBRAR) $(LIBSO) $(LIBSO_LNK) \
+		$(TST_OBJ) $(TST6_OBJ) \
+		$(CLIENT) $(CLIENT6)
 
 tar: $(PACKAGE)
 	tar cf drac.tar $(PACKAGE)
 
 install: $(SERVER)
-	$(INSTALL) -c -o bin -g bin -m 0755 $(SERVER) $(EBIN)
+	$(INSTALL) -c -o bin -g bin -m 0755 $(SERVER) $(DESTDIR)$(EBIN)
 
 install-man: $(SERVER).1m dracauth.3
-	$(INSTALL) -c -m 0444 $(SERVER).1m $(MAN)$(MANADM)/$(SERVER).$(MANADM)
-	$(INSTALL) -c -m 0444 dracauth.3 $(MAN)$(MANLIB)/dracauth.$(MANLIB)
+	$(INSTALL) -c -m 0444 $(SERVER).1m $(DESTDIR)$(MAN)$(MANADM)/$(SERVER).$(MANADM)
+	$(INSTALL) -c -m 0444 dracauth.3 $(DESTDIR)$(MAN)$(MANLIB)/dracauth.$(MANLIB)
 
